@@ -1,3 +1,5 @@
+#include <bitset>
+
 #include "Shader.h"
 #include "ShaderFileLoader.h"
 #include <iostream>
