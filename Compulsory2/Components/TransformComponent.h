@@ -1,7 +1,8 @@
 ﻿#pragma once
+#include "Component.h"
 #include "glm/vec3.hpp"
 
-struct TransformComponent {
+struct TransformComponent : public Component {
     glm::vec3 position;
     glm::vec3 scale;
     glm::vec3 rotation;

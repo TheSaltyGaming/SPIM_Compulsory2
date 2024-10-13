@@ -5,12 +5,9 @@
 #include "Entity.h"
 
 
-EntityManager::EntityManager()
-{
-    for (int i = 0; i < MAX_ENTITIES; ++i)
-    {
-        Entity entity;
-        entity.id = i;
+EntityManager::EntityManager(ComponentManager& compManager) : componentManager(compManager) {
+    for (int i = 0; i < MAX_ENTITIES; ++i) {
+        Entity entity(componentManager, i);
         mAvailableEntities.push(entity);
     }
 }
@@ -28,7 +25,7 @@ Entity EntityManager::CreateEntity()
 
 void EntityManager::DestroyEntity(Entity entity)
 {
-    assert(entity.id < MAX_ENTITIES && "Entity out of range.");
+    assert(entity.GetId() < MAX_ENTITIES && "Entity out of range.");
 
     mAvailableEntities.push(entity);
     --mLivingEntityCount;

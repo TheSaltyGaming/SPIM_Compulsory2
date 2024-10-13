@@ -3,11 +3,12 @@
 #include <queue>
 #include <array>
 #include "Entity.h"
+#include "ComponentManager.h"
 
 class EntityManager
 {
 public:
-    EntityManager();
+    EntityManager(ComponentManager& compManager);
 
     Entity CreateEntity();
     void DestroyEntity(Entity entity);
@@ -15,4 +16,5 @@ public:
 private:
     std::queue<Entity> mAvailableEntities{};
     uint32_t mLivingEntityCount{};
+    ComponentManager& componentManager;
 };
