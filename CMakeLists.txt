@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-project(Comp2CmakeSPIM)
+project(SPIM_Compulsory2)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -12,7 +12,7 @@ include_directories(Mesh)
 
 add_subdirectory(Dependency/libs/glfw-3.4)
 
-add_executable(Comp2CmakeSPIM main.cpp
+add_executable(SPIM_Compulsory2 main.cpp
         Vertex.cpp
         Collision.cpp
         glad.c
@@ -53,6 +53,6 @@ add_executable(Comp2CmakeSPIM main.cpp
         Systems/System.cpp
         Systems/System.h)
 
-target_link_libraries(Comp2CmakeSPIM glfw)
+target_link_libraries(SPIM_Compulsory2 glfw)
 
 
