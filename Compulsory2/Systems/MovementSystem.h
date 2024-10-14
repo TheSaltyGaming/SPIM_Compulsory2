@@ -7,7 +7,7 @@ class MovementSystem : public System
 public:
     MovementSystem(ComponentManager& componentManager) : mComponentManager(componentManager) {};
 
-    void Update(std::vector<Entity>& entities) override;
+    void Update(std::vector<Entity>& entities, float deltaTime) override;
 
 private:
 

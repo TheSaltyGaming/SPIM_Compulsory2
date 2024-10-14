@@ -7,6 +7,6 @@ class System
 public:
 
 public:
-    virtual void Update(std::vector<Entity>& entities) = 0;
+    virtual void Update(std::vector<Entity>& entities, float deltaTime) = 0;
     
 };
