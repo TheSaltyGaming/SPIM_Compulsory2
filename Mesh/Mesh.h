@@ -1,18 +1,19 @@
 ﻿#pragma once
 #include <vector>
 #include "../Vertex.h"
+#include "../Components/TransformComponent.h"
 #include "glm/fwd.hpp"
 #include "glm/vec3.hpp"
 
 enum MeshType {Cube, Triangle, Square, Pyramid, Sphere, Plane};
 
-class Mesh
+class Mesh : public Component
 {
 public:
 
     Mesh();
-    Mesh(MeshType type, float radius, glm::vec3 color);
-    Mesh(MeshType type, float radius, int segments, glm::vec3 color);
+    Mesh(MeshType type, float radius, glm::vec3 color, TransformComponent* tComp);
+    Mesh(MeshType type, float radius, int segments, glm::vec3 color, TransformComponent* tComp);
     
 
     void CreateCube(float radius, glm::vec3 color);
@@ -35,6 +36,7 @@ public:
     glm::mat4 GetTransform();
     
     MeshType mType;
+
 
     
     bool pickupable = false;
@@ -67,5 +69,7 @@ public:
     void CalculateInitialBoundingBox();
 
     glm::vec3 ObjectColor = glm::vec3(1.0f, 1.0f, 1.0f);
+
+    TransformComponent* transform;
     
 };

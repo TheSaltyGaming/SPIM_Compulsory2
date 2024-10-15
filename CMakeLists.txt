@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.29.6)
 project(SPIM_Compulsory2)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -32,8 +32,6 @@ add_executable(SPIM_Compulsory2 main.cpp
         Components/Component.h
         Components/HealthComponent.cpp
         Components/HealthComponent.h
-        Components/MeshComponent.cpp
-        Components/MeshComponent.h
         Components/TransformComponent.cpp
         Components/TransformComponent.h
         ECS/ComponentManager.cpp
@@ -51,7 +49,8 @@ add_executable(SPIM_Compulsory2 main.cpp
         Systems/RenderSystem.cpp
         Systems/RenderSystem.h
         Systems/System.cpp
-        Systems/System.h)
+        Systems/System.h
+)
 
 target_link_libraries(SPIM_Compulsory2 glfw)
 

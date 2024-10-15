@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "System.h"
-#include "../Components/MeshComponent.h"
+#include "../Mesh/Mesh.h"
 #include "../Components/TransformComponent.h"
 #include <glm/matrix.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -13,7 +13,7 @@ public:
 
     void Update(std::vector<Entity>& entities, float deltaTime) override;
 
-    void RenderEntity(MeshComponent& meshComponent, TransformComponent& transformComponent);
+    void RenderEntity();
 
 private:
     ComponentManager& mComponentManager;

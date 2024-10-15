@@ -19,22 +19,11 @@ void RenderSystem::Update(std::vector<Entity>& entities, float deltaTime)
 	}
 }
 
-void RenderSystem::RenderEntity(MeshComponent& meshComponent, TransformComponent& transformComponent)
+void RenderSystem::RenderEntity()
 {
-	glm::mat4 modelMatrix = glm::mat4(1.0f);
-	modelMatrix = glm::translate(modelMatrix, transformComponent.position);
-	modelMatrix = glm::rotate(modelMatrix, glm::radians(transformComponent.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-	modelMatrix = glm::rotate(modelMatrix, glm::radians(transformComponent.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-	modelMatrix = glm::rotate(modelMatrix, glm::radians(transformComponent.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-	modelMatrix = glm::scale(modelMatrix, transformComponent.scale);
-
-	// glUSeProgram(mShaderProgram);
-	int modelLoc = glGetUniformLocation(mShaderProgram, "model");
-	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-
-	if (meshComponent.mesh)
-	{
-		// meshComponent.mesh->Draw();
+	for (auto entityId : mComponentManager.GetEntities())  {
+		auto mesh = componentManager.GetComponent<Mesh>(entityId);
+		// Render using mesh methods
+		mesh->Draw(shaderProgram);
 	}
-
 }

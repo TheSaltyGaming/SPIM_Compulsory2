@@ -5,48 +5,43 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <cfloat>
 
-Mesh::Mesh()
-{
+
+Mesh::Mesh() {
 }
 
-Mesh::Mesh(MeshType type, float radius, glm::vec3 color)
-{
+Mesh::Mesh(MeshType type, float radius, glm::vec3 color, TransformComponent* tcomp): transform(tcomp) {
     mType = type;
-    switch (type)
-    {
-    case Cube:
-        CreateCube(radius, color);
-        break;
-    case Triangle:
-        CreateTriangle(radius, color);
-        break;
-    case Square:
-        CreateSquare(radius, color);
-        break;
-    case Pyramid:
-        CreatePyramid(radius, color);
-        break;
-    case Plane:
-        CreatePlane(radius, color);
-        break;
-    case Sphere:
-        std::cout << "Error, please specify number of segments" << std::endl;
-        break;
-        
+    switch (type) {
+        case Cube:
+            CreateCube(radius, color);
+            break;
+        case Triangle:
+            CreateTriangle(radius, color);
+            break;
+        case Square:
+            CreateSquare(radius, color);
+            break;
+        case Pyramid:
+            CreatePyramid(radius, color);
+            break;
+        case Plane:
+            CreatePlane(radius, color);
+            break;
+        case Sphere:
+            std::cout << "Error, please specify number of segments" << std::endl;
+            break;
     }
 }
 
-Mesh::Mesh(MeshType type, float radius, int subdivisions, glm::vec3 color)
-{
+Mesh::Mesh(MeshType type, float radius, int subdivisions, glm::vec3 color, TransformComponent* tComp): transform(tComp) {
     mType = type;
-    switch (type)
-    {
-    case Sphere:
-        CreateSphere2(radius, subdivisions, color);
-        break;
-    default:
-        std::cout << "Only sphere accepts int segments" << std::endl;
-        break;
+    switch (type) {
+        case Sphere:
+            CreateSphere2(radius, subdivisions, color);
+            break;
+        default:
+            std::cout << "Only sphere accepts int segments" << std::endl;
+            break;
     }
 }
 
@@ -298,16 +293,20 @@ void Mesh::Draw(unsigned shaderProgram)
 
 glm::mat4 Mesh::GetTransform()
 {
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, globalPosition);
-    
-    model = glm::rotate(model, glm::radians(globalRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(globalRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(globalRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+    glm::vec3 pos = transform->position;
+    glm::vec3 rot = transform->rotation;
+    glm::vec3 scale = transform->scale;
 
-    model = glm::scale(model, globalScale);
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, pos);
     
-    Radius = 1 * globalScale.x;
+    model = glm::rotate(model, glm::radians(rot.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(rot.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    model = glm::scale(model, scale);
+    
+    Radius = 1 * scale.x;
     
     return model;
 }
@@ -368,7 +367,7 @@ void Mesh::DrawBoundingBox(unsigned int shaderProgram)
 
 void Mesh::Physics(float deltaTime)
 {
-    globalPosition += velocity * deltaTime;
+    transform->position += velocity * deltaTime;
 }
 
 /// 

@@ -220,7 +220,7 @@ void SetupMeshes()
     //Create meshes here, Make meshes here, Setup meshes here, define meshes here, setupObjects setup objects create objects
     //(this comment is for CTRL + F search)
 
-    PlayerMesh = Mesh(Cube, 1.f, colors.magenta);
+    PlayerMesh = Mesh(Cube, 1.f, colors.magenta, nullptr);
 
     PlayerMesh.globalPosition = glm::vec3(0.0f, 0.5f, 0.0f);
     PlayerMesh.globalScale = glm::vec3(0.2f, 0.2f, 0.2f);
@@ -229,7 +229,7 @@ void SetupMeshes()
     int SphereCount = 20;
 
     for (int i = 0; i < SphereCount; ++i) {
-        Mesh* sphere = new Mesh(Sphere, 1.f, 4, RandomColor());
+        Mesh* sphere = new Mesh(Sphere, 1.f, 4, RandomColor(), nullptr);
 
         sphere->globalPosition = glm::vec3(
         math.RandomVec3(-3.7, 3.7).x,
@@ -243,32 +243,32 @@ void SetupMeshes()
     }
 
 #pragma region OtherMeshes
-    plane_mesh = Mesh(Plane, 4, colors.green);
+    plane_mesh = Mesh(Plane, 4, colors.green, nullptr);
     plane_mesh.globalPosition.y = -0.5f;
     wallMeshes.push_back(&plane_mesh);
 
 
-    CameraMesh = Mesh(Cube, 0.5f, colors.white);
+    CameraMesh = Mesh(Cube, 0.5f, colors.white, nullptr);
     CameraMesh.globalPosition = MainCamera.cameraPos;
 
     float wallScale = 4.f;
     float heightScale = 0.4f;
-    wall1_mesh = Mesh(Cube, 1.f, colors.orange);
+    wall1_mesh = Mesh(Cube, 1.f, colors.orange, nullptr);
     wall1_mesh.globalPosition = glm::vec3(0.0f, 0.0f, -4.0f);
     wall1_mesh.globalScale = glm::vec3(wallScale, wallScale*heightScale, 0.1f);
     wallMeshes.push_back(&wall1_mesh);
 
-    wall2_mesh = Mesh(Cube, 1.f, colors.cyan);
+    wall2_mesh = Mesh(Cube, 1.f, colors.cyan, nullptr);
     wall2_mesh.globalPosition = glm::vec3(0.0f, 0.0f, 4.0f);
     wall2_mesh.globalScale = glm::vec3(wallScale, wallScale*heightScale, 0.1f);
     wallMeshes.push_back(&wall2_mesh);
 
-    wall3_mesh = Mesh(Cube, 1.f, colors.yellow);
+    wall3_mesh = Mesh(Cube, 1.f, colors.yellow, nullptr);
     wall3_mesh.globalPosition = glm::vec3(-4.0f, 0.0f, 0.0f);
     wall3_mesh.globalScale = glm::vec3(0.1f, wallScale*heightScale, wallScale);
     wallMeshes.push_back(&wall3_mesh);
 
-    wall4_mesh = Mesh(Cube, 1.f, colors.blue);
+    wall4_mesh = Mesh(Cube, 1.f, colors.blue, nullptr);
     wall4_mesh.globalPosition = glm::vec3(4.0f, 0.0f, 0.0f);
     wall4_mesh.globalScale = glm::vec3(0.1f, wallScale*heightScale, wallScale);
     wallMeshes.push_back(&wall4_mesh);
