@@ -30,12 +30,16 @@ public:
 
     void Setup();
     void CalculateBoundingBox();
-    
+    void SetColor(glm::vec3 color);
+
     void Draw(unsigned int shaderProgram);
 
     glm::mat4 GetTransform();
     
     MeshType mType;
+
+    bool markedForDeletion = false;
+    int health = 2;
 
 
     

@@ -161,5 +161,9 @@ glm::vec3 Math::deCasteljau(std::vector<glm::vec3> points, float t)
     return points[0];
 }
 
+glm::vec3 Math::lerp(const glm::vec3 &start, const glm::vec3 &end, float t) {
+    return start + t * (end - start);
+}
+
 
 

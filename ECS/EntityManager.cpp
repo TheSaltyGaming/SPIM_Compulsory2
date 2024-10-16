@@ -30,3 +30,4 @@ void EntityManager::DestroyEntity(Entity entity)
     mAvailableEntities.push(entity);
     --mLivingEntityCount;
 }
+

@@ -5,6 +5,9 @@ class ComponentManager;
 
 class Entity {
 public:
+
+    Entity();
+
     Entity(ComponentManager& manager, int id) : id(id), componentManager(manager) {}
 
     unsigned int GetId() const { return id; }

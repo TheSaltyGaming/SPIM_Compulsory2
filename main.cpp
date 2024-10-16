@@ -4,6 +4,7 @@
 #include "ShaderFileLoader.h"
 #include <iostream>
 #include <map>
+#include <set>
 #include <glm/fwd.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -11,10 +12,12 @@
 
 #include "Camera.h"
 #include "Collision.h"
+#include "EntityManager.h"
 #include "Math.h"
 #include "Mesh/Mesh.h"
 #include "Mesh/Surface.h"
 #include "glm/mat4x3.hpp"
+#include "Components/TransformComponent.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -25,7 +28,16 @@ void DrawObjects(unsigned VAO, Shader ShaderProgram);
 
 void CollisionChecking();
 
+void Attack();
 glm::vec3 RandomColor();
+
+ComponentManager componentManager;
+EntityManager entityManager = EntityManager(componentManager);
+
+
+void EntitySetup();
+
+std::unique_ptr<Entity> playerEntity;
 
 
 std::vector<Mesh*> wallMeshes;
@@ -49,6 +61,10 @@ Mesh wall1_mesh;
 Mesh wall2_mesh;
 Mesh wall3_mesh;
 Mesh wall4_mesh;
+
+int lives = 6;
+
+glm::vec3 lastPos = glm::vec3(999999.f);
 
 
 // settings
@@ -93,6 +109,26 @@ bool firstCamera = true;
 
 std::vector<unsigned> shaderPrograms;
 
+void EntitySetup()
+{
+    playerEntity = std::make_unique<Entity>(entityManager.CreateEntity());
+
+    auto transformComponent = std::make_shared<TransformComponent>();
+    transformComponent->position = glm::vec3(0.0f, 0.0f, 0.0f);
+    transformComponent->scale = glm::vec3(1.0f, 1.0f, 1.0f);
+    transformComponent->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    auto meshComponent = std::make_shared<Mesh>(Cube, 1.0f, glm::vec3(1.0f, 0.0f, 0.0f), transformComponent.get());
+
+    componentManager.AddComponent<TransformComponent>(playerEntity->GetId(), transformComponent);
+    componentManager.AddComponent<Mesh>(playerEntity->GetId(), meshComponent);
+
+    // componentManager.AddComponent<TransformComponent>(newEntity.GetId(), transformComponent);
+    // componentManager.AddComponent<Mesh>(newEntity.GetId(), meshComponent);
+
+}
+
+
 void DrawObjects(unsigned VAO, Shader ShaderProgram)
 {
     //Drawmeshes here, draw meshes (this comment is for CTRL + F search)
@@ -119,6 +155,18 @@ void DrawObjects(unsigned VAO, Shader ShaderProgram)
     wall4_mesh.Draw(ShaderProgram.ID);
     //CameraMesh.Draw(ShaderProgram.ID);
 
+
+    std::vector<Entity> entitiesWithMesh = entityManager.GetAllEntitiesWithComponent<Mesh>();
+
+    for (const Entity& entity : entitiesWithMesh) {
+        // Retrieve the MeshComponent
+        std::shared_ptr<Mesh> meshComponent = componentManager.GetComponent<Mesh>(entity.GetId());
+
+        // If there's a valid MeshComponent, we draw it
+        if (meshComponent) {
+            meshComponent->Draw(ShaderProgram.ID);
+        }
+    }
 
 }
 
@@ -166,10 +214,41 @@ void render(GLFWwindow* window, Shader ourShader, unsigned VAO)
 
         plane_mesh.CalculateBoundingBox();
 
+        auto transformComponent = componentManager.GetComponent<TransformComponent>(playerEntity->GetId());
+        transformComponent->position = PlayerMesh.globalPosition;
+
+
+
         //for every sphere do physics
         for (Mesh* sphere : sphereMeshes)
         {
+
             sphere->Physics(deltaTime);
+
+
+            //Hoaming towards player
+            if (glm::distance(PlayerMesh.globalPosition, sphere->globalPosition) < 2)
+            {
+                lastPos = PlayerMesh.globalPosition;
+
+                glm::vec3 direction = glm::normalize(PlayerMesh.globalPosition - sphere->globalPosition);
+                sphere->velocity += direction * 0.01f;
+            }
+            //Hoaming towards last position
+            else if (glm::distance(lastPos, sphere->globalPosition) < 2)
+            {
+                glm::vec3 direction = glm::normalize(lastPos - sphere->globalPosition);
+                sphere->velocity += direction * 0.01f;
+            }
+            else {
+                sphere->velocity = glm::vec3(0.f);
+            }
+
+            //Speed cap
+            if (glm::length(sphere->velocity) > 1.5f)
+            {
+                sphere->velocity = glm::normalize(sphere->velocity) * 1.5f;
+            }
         }
 
         //cout camera position
@@ -226,7 +305,7 @@ void SetupMeshes()
     PlayerMesh.globalScale = glm::vec3(0.2f, 0.2f, 0.2f);
 
 
-    int SphereCount = 20;
+    int SphereCount = 10;
 
     for (int i = 0; i < SphereCount; ++i) {
         Mesh* sphere = new Mesh(Sphere, 1.f, 4, RandomColor(), nullptr);
@@ -323,6 +402,7 @@ int main()
 
 
     /// SETUP MESHES HER
+    EntitySetup();
     SetupMeshes();
 
 
@@ -404,6 +484,11 @@ void processInput(GLFWwindow* window)
         {
             sphere->velocity = glm::vec3(0.0f, 0.0f, 0.0f);
         }
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+    {
+        Attack();
     }
 
 
@@ -529,17 +614,54 @@ void CollisionChecking()
         W++;
     }
 
+    // Marking spheres for deletion
+    std::set<int> spheresToDelete;
+
     int p = 0;
-    for (Mesh* sphere : sphereMeshes)
+    for (int i = 0; i < sphereMeshes.size(); ++i)
     {
+        Mesh* sphere = sphereMeshes[i];
 
-        for (int i = p+1; i < sphereMeshes.size(); ++i)
+        for (int j = p + 1; j < sphereMeshes.size(); ++j)
         {
-            collision.SphereCollision(sphere, sphereMeshes[i]);
+            collision.SphereCollision(sphere, sphereMeshes[j]);
+        }
 
-            collision.SphereToAABBCollision(sphere, &PlayerMesh);
+        if (collision.SphereToAABBCollision(sphere, &PlayerMesh) && !sphere->markedForDeletion)
+        {
+            std::cout << "Collision with player" << std::endl;
+            // Knockback
+            glm::vec3 knockbackDirection = glm::normalize(PlayerMesh.globalPosition - sphere->globalPosition);
+            float smoothingFactor = 0.1f; // Adjust this value to control the smoothing
+            if (CameraMode == 2) {
+                MainCamera.cameraPos = math.lerp(MainCamera.cameraPos, MainCamera.cameraPos + knockbackDirection * 0.1f, smoothingFactor);
+            } else {
+                PlayerMesh.globalPosition = math.lerp(PlayerMesh.globalPosition, PlayerMesh.globalPosition + knockbackDirection * 0.1f, smoothingFactor);
+            }
+
+
+            // Mark sphere for deletion
+            sphere->markedForDeletion = true;
+            spheresToDelete.insert(i);
+
         }
         p++;
+    }
+
+    // Delete the marked spheres
+    for (auto it = spheresToDelete.rbegin(); it != spheresToDelete.rend(); ++it)
+    {
+        delete sphereMeshes[*it];
+        sphereMeshes.erase(sphereMeshes.begin() + *it);
+
+        lives --;
+        if (lives <= 0) {
+            std::cout << "Game Over" << std::endl;
+            PlayerMesh.SetColor(colors.red);
+        }
+        if (lives <= 3 && lives > 0) {
+            PlayerMesh.SetColor(colors.orange);
+        }
     }
 }
 
@@ -551,3 +673,29 @@ glm::vec3 RandomColor()
     (rand() % 256) / 255.0f
 );
 }
+
+void Attack()
+{
+    float attackRadius = 0.7f;
+    float knockbackDistance = 0.5f;
+
+    for (Mesh* sphere : sphereMeshes)
+    {
+        float distance = glm::distance(PlayerMesh.globalPosition, sphere->globalPosition);
+        if (distance <= attackRadius)
+        {
+            // Apply knockback
+            glm::vec3 knockbackDirection = glm::normalize(sphere->globalPosition - PlayerMesh.globalPosition);
+            sphere->globalPosition += knockbackDirection * knockbackDistance;
+
+            // Decrease health
+            sphere->health -= 1;
+            if (sphere->health <= 0)
+            {
+                // Mark sphere for deletion
+                sphere->markedForDeletion = true;
+            }
+        }
+    }
+}
+

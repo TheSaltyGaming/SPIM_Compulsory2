@@ -248,7 +248,7 @@ void Mesh::Setup()
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
     glEnableVertexAttribArray(1);
     // Color attribute
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Color)); // Add this line
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Color));
     glEnableVertexAttribArray(2);
 
     // Unbind VAO and VBO
@@ -271,8 +271,30 @@ void Mesh::CalculateBoundingBox()
     }
 }
 
+void Mesh::SetColor(glm::vec3 color) {
+    glm::vec3 color2 = color+glm::vec3(0.2f, 0.2f, 0.2f);
+    glm::vec3 color3 = color-glm::vec3(0.2f, 0.2f, 0.2f);
+    if (mType == Cube) {
+        ObjectColor = color;
+        vertices[0].Color = color;
+        vertices[1].Color = color;
+        vertices[2].Color = color;
+        vertices[3].Color = color2;
+        vertices[4].Color = color2;
+        vertices[5].Color = color3;
+        vertices[6].Color = color3;
+        vertices[7].Color = color3;
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex), vertices.data());
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
+
 void Mesh::Draw(unsigned shaderProgram)
 {
+    if (markedForDeletion) return;
+
     glm::mat4 model = GetTransform();
     
     int modelLoc = glGetUniformLocation(shaderProgram, "model");
@@ -293,9 +315,14 @@ void Mesh::Draw(unsigned shaderProgram)
 
 glm::mat4 Mesh::GetTransform()
 {
-    glm::vec3 pos = transform->position;
-    glm::vec3 rot = transform->rotation;
-    glm::vec3 scale = transform->scale;
+    //TODO: uncomment when components are implemented
+    // glm::vec3 pos = transform->position;
+    // glm::vec3 rot = ss->rotation;
+    // glm::vec3 scale = transform->scale;
+
+    glm::vec3 pos = globalPosition;
+    glm::vec3 rot = globalRotation;
+    glm::vec3 scale = globalScale;
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, pos);
@@ -367,7 +394,9 @@ void Mesh::DrawBoundingBox(unsigned int shaderProgram)
 
 void Mesh::Physics(float deltaTime)
 {
-    transform->position += velocity * deltaTime;
+    //TODO: uncomment when components are implemented
+    // transform->position += velocity * deltaTime;
+    globalPosition += velocity * deltaTime;
 }
 
 /// 

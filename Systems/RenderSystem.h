@@ -13,7 +13,7 @@ public:
 
     void Update(std::vector<Entity>& entities, float deltaTime) override;
 
-    void RenderEntity();
+    void RenderEntity(std::vector<Entity>& entities);
 
 private:
     ComponentManager& mComponentManager;
