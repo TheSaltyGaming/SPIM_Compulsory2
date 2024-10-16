@@ -36,6 +36,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+<<<<<<< Updated upstream
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Components/MeshComponent.cpp" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Components/MeshComponent.h" beforeDir="false" />
@@ -44,6 +45,8 @@
       <change beforePath="$PROJECT_DIR$/Systems/RenderSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Systems/RenderSystem.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Systems/RenderSystem.h" beforeDir="false" afterPath="$PROJECT_DIR$/Systems/RenderSystem.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
+=======
+>>>>>>> Stashed changes
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -149,11 +152,15 @@
       <updated>1728927352721</updated>
       <workItem from="1728927354133" duration="2597000" />
       <workItem from="1728940423522" duration="101000" />
+<<<<<<< Updated upstream
       <workItem from="1728940539928" duration="322000" />
       <workItem from="1728976654132" duration="145000" />
       <workItem from="1728977009841" duration="155000" />
       <workItem from="1728977327985" duration="11747000" />
       <workItem from="1728993988314" duration="1501000" />
+=======
+      <workItem from="1728940539928" duration="1343000" />
+>>>>>>> Stashed changes
     </task>
     <servers />
   </component>
