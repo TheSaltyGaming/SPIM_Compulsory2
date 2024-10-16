@@ -396,7 +396,19 @@ void Mesh::Physics(float deltaTime)
 {
     //TODO: uncomment when components are implemented
     // transform->position += velocity * deltaTime;
-    globalPosition += velocity * deltaTime;
+    if (transform)
+    {
+        transform->position += velocity * deltaTime;
+
+        globalPosition = transform->position;
+        globalRotation = transform->rotation;
+        globalScale = transform->scale;
+    }
+    else
+    {
+        globalPosition += velocity * deltaTime;
+    }
+
 }
 
 /// 

@@ -39,6 +39,8 @@ void EntitySetup();
 
 std::unique_ptr<Entity> playerEntity;
 
+std::vector<std::shared_ptr<Entity>> healthPotions;
+
 
 std::vector<Mesh*> wallMeshes;
 std::vector<Mesh*> sphereMeshes;
@@ -118,6 +120,8 @@ void EntitySetup()
     transformComponent->scale = glm::vec3(1.0f, 1.0f, 1.0f);
     transformComponent->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 
+    transformComponent->scale = glm::vec3(0.1f, 0.1f, 0.1f);
+
     auto meshComponent = std::make_shared<Mesh>(Cube, 1.0f, glm::vec3(1.0f, 0.0f, 0.0f), transformComponent.get());
 
     componentManager.AddComponent<TransformComponent>(playerEntity->GetId(), transformComponent);
@@ -125,6 +129,30 @@ void EntitySetup()
 
     // componentManager.AddComponent<TransformComponent>(newEntity.GetId(), transformComponent);
     // componentManager.AddComponent<Mesh>(newEntity.GetId(), meshComponent);
+
+    // Set up health potions
+    glm::vec3 scale = glm::vec3(0.05f);
+    glm::vec3 initialPosition = glm::vec3(0.0f);
+
+    for (int i = 0; i < 3; ++i) {
+        // Create new entity for the health potion
+        auto healthPotion = std::make_shared<Entity>(entityManager.CreateEntity());
+
+        // Add Transform Component
+        auto potionTransformComponent = std::make_shared<TransformComponent>();
+        potionTransformComponent->position = initialPosition + glm::vec3(i * 1.0f, 0.5f, 0.0f);
+        potionTransformComponent->scale = scale;
+        potionTransformComponent->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+
+        // Add Mesh Component
+        auto potionMeshComponent = std::make_shared<Mesh>(Cube, 1.0f, colors.blue, potionTransformComponent.get());
+
+        componentManager.AddComponent<TransformComponent>(healthPotion->GetId(), potionTransformComponent);
+        componentManager.AddComponent<Mesh>(healthPotion->GetId(), potionMeshComponent);
+
+        // Add health potion entity to the global vector
+        healthPotions.push_back(healthPotion);
+    }
 
 }
 
@@ -168,6 +196,8 @@ void DrawObjects(unsigned VAO, Shader ShaderProgram)
         }
     }
 
+
+
 }
 
 
@@ -183,6 +213,10 @@ void render(GLFWwindow* window, Shader ourShader, unsigned VAO)
     model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 
+    //TEMP CODE:
+    auto transformComponent = componentManager.GetComponent<TransformComponent>(playerEntity->GetId());
+    transformComponent->position = PlayerMesh.globalPosition;
+    transformComponent->scale = glm::vec3(0.25f, 0.25f, 0.25f);
 
 
     // render loop
@@ -214,9 +248,18 @@ void render(GLFWwindow* window, Shader ourShader, unsigned VAO)
 
         plane_mesh.CalculateBoundingBox();
 
-        auto transformComponent = componentManager.GetComponent<TransformComponent>(playerEntity->GetId());
-        transformComponent->position = PlayerMesh.globalPosition;
 
+
+        // auto meshComponent = componentManager.GetComponent<Mesh>(playerEntity->GetId());
+        // meshComponent->Physics(deltaTime);
+
+        // Call physics for all mesh components
+        std::vector<Entity> entitiesWithMesh = entityManager.GetAllEntitiesWithComponent<Mesh>();
+        for (const Entity& entity : entitiesWithMesh) {
+            if (auto meshComponent = componentManager.GetComponent<Mesh>(entity.GetId())) {
+                meshComponent->Physics(deltaTime);
+            }
+        }
 
 
         //for every sphere do physics
@@ -488,6 +531,8 @@ void processInput(GLFWwindow* window)
 
     if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
     {
+        auto transformComponent = componentManager.GetComponent<TransformComponent>(playerEntity->GetId());
+        transformComponent->position = PlayerMesh.globalPosition;
         Attack();
     }
 
@@ -661,6 +706,29 @@ void CollisionChecking()
         }
         if (lives <= 3 && lives > 0) {
             PlayerMesh.SetColor(colors.orange);
+        }
+        if (lives > 3) {
+            PlayerMesh.SetColor(colors.magenta);
+        }
+    }
+
+    for (auto it = healthPotions.begin(); it != healthPotions.end();)
+    {
+        auto potionMeshComponent = componentManager.GetComponent<Mesh>((*it)->GetId());
+        if (collision.AABBCollision(&PlayerMesh, potionMeshComponent.get()))
+        {
+            std::cout << "Health potion collected" << std::endl;
+            componentManager.RemoveComponent<TransformComponent>((*it)->GetId());
+            componentManager.RemoveComponent<Mesh>((*it)->GetId());
+            //entityManager.DestroyEntity((*it)->GetId());
+            it = healthPotions.erase(it);
+            lives = 6;
+            PlayerMesh.SetColor(colors.magenta);
+            //TODO REMOVE HEALTH POTIONS FROM ENTITIES LIST PLEASE
+        }
+        else
+        {
+            ++it;
         }
     }
 }
