@@ -46,7 +46,6 @@ std::vector<std::shared_ptr<Entity>> healthPotions;
 
 std::vector<std::shared_ptr<Entity>> enemyEntities;
 
-std::vector<Mesh*> wallMeshes;
 std::vector<Mesh*> sphereMeshes;
 
 Mesh PlayerMesh;
@@ -55,15 +54,8 @@ Math math;
 Collision collision;
 
 
-Mesh plane_mesh;
-
 
 Mesh CameraMesh;
-
-Mesh wall1_mesh;
-Mesh wall2_mesh;
-Mesh wall3_mesh;
-Mesh wall4_mesh;
 
 int lives = 6;
 
@@ -123,7 +115,7 @@ void EntitySetup()
 
     transformComponent->scale = glm::vec3(0.1f, 0.1f, 0.1f);
 
-    auto meshComponent = std::make_shared<Mesh>(Cube, 1.0f, glm::vec3(1.0f, 0.0f, 0.0f), transformComponent.get());
+    auto meshComponent = std::make_shared<Mesh>(Cube, 1.0f, glm::vec3(colors.magenta), transformComponent.get());
 
     componentManager.AddComponent<TransformComponent>(playerEntity->GetId(), transformComponent);
     componentManager.AddComponent<Mesh>(playerEntity->GetId(), meshComponent);
@@ -156,7 +148,7 @@ void EntitySetup()
     }
 
 
-    int SphereCount = 10;
+    int SphereCount = 100;
 
     for (int i = 0; i < SphereCount; ++i) {
         // Create new entity for the sphere
@@ -165,9 +157,9 @@ void EntitySetup()
         // Add Transform Component
         auto sphereTransformComponent = std::make_shared<TransformComponent>();
         sphereTransformComponent->position = glm::vec3(
-            math.RandomVec3(-3.7, 3.7).x,
+            math.RandomVec3(-6.7, 6.7).x,
             0.5, // y
-            math.RandomVec3(-3.7, 3.7).z
+            math.RandomVec3(-6.7, 6.7).z
         );
         sphereTransformComponent->scale = glm::vec3(0.1f, 0.1f, 0.1f);
         sphereTransformComponent->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -202,12 +194,6 @@ void DrawObjects(unsigned VAO, Shader ShaderProgram)
 
     PlayerMesh.Draw(ShaderProgram.ID);
 
-    plane_mesh.Draw(ShaderProgram.ID);
-
-    wall1_mesh.Draw(ShaderProgram.ID);
-    wall2_mesh.Draw(ShaderProgram.ID);
-    wall3_mesh.Draw(ShaderProgram.ID);
-    wall4_mesh.Draw(ShaderProgram.ID);
     //CameraMesh.Draw(ShaderProgram.ID);
 
 
@@ -261,7 +247,6 @@ void render(GLFWwindow* window, Shader ourShader, unsigned VAO)
         CameraMesh.globalPosition = MainCamera.cameraPos;
         CameraMesh.CalculateBoundingBox();
 
-        plane_mesh.CalculateBoundingBox();
 
 
 
@@ -276,36 +261,43 @@ void render(GLFWwindow* window, Shader ourShader, unsigned VAO)
             }
         }
 
+        auto transformComponent = componentManager.GetComponent<TransformComponent>(playerEntity->GetId());
+        transformComponent->position = PlayerMesh.globalPosition;
 
         //for every sphere do physics
-        for (Mesh* sphere : sphereMeshes)
+        for (auto& entity : enemyEntities)
         {
+            auto sphereMeshComponent = componentManager.GetComponent<Mesh>(entity->GetId());
+            auto sphereTransformComponent = componentManager.GetComponent<TransformComponent>(entity->GetId());
 
-            sphere->Physics(deltaTime);
-
-
-            //Hoaming towards player
-            if (glm::distance(PlayerMesh.globalPosition, sphere->globalPosition) < 2)
+            if (sphereMeshComponent && sphereTransformComponent)
             {
-                lastPos = PlayerMesh.globalPosition;
+                sphereMeshComponent->Physics(deltaTime);
 
-                glm::vec3 direction = glm::normalize(PlayerMesh.globalPosition - sphere->globalPosition);
-                sphere->velocity += direction * 0.01f;
-            }
-            //Hoaming towards last position
-            else if (glm::distance(lastPos, sphere->globalPosition) < 2)
-            {
-                glm::vec3 direction = glm::normalize(lastPos - sphere->globalPosition);
-                sphere->velocity += direction * 0.01f;
-            }
-            else {
-                sphere->velocity = glm::vec3(0.f);
-            }
+                // Hoaming towards player
+                if (glm::distance(PlayerMesh.globalPosition, sphereTransformComponent->position) < 3)
+                {
+                    lastPos = PlayerMesh.globalPosition;
 
-            //Speed cap
-            if (glm::length(sphere->velocity) > 1.5f)
-            {
-                sphere->velocity = glm::normalize(sphere->velocity) * 1.5f;
+                    glm::vec3 direction = glm::normalize(PlayerMesh.globalPosition - sphereTransformComponent->position);
+                    sphereMeshComponent->velocity += direction * 0.01f;
+                }
+                // Hoaming towards last position
+                else if (glm::distance(lastPos, sphereTransformComponent->position) < 3)
+                {
+                    glm::vec3 direction = glm::normalize(lastPos - sphereTransformComponent->position);
+                    sphereMeshComponent->velocity += direction * 0.01f;
+                }
+                else
+                {
+                    sphereMeshComponent->velocity = glm::vec3(0.f);
+                }
+
+                // Speed cap
+                if (glm::length(sphereMeshComponent->velocity) > 0.5f)
+                {
+                    sphereMeshComponent->velocity = glm::normalize(sphereMeshComponent->velocity) * 0.5f;
+                }
             }
         }
 
@@ -364,53 +356,12 @@ void SetupMeshes()
     PlayerMesh.globalPosition = glm::vec3(0.0f, 0.5f, 0.0f);
     PlayerMesh.globalScale = glm::vec3(0.2f, 0.2f, 0.2f);
 
-
-    int SphereCount = 0;
-
-    for (int i = 0; i < SphereCount; ++i) {
-        Mesh* sphere = new Mesh(Sphere, 1.f, 4, RandomColor(), nullptr);
-
-        sphere->globalPosition = glm::vec3(
-        math.RandomVec3(-3.7, 3.7).x,
-        0.5, // y
-        math.RandomVec3(-3.7, 3.7).z);
-
-        sphere->globalScale = glm::vec3(0.1f, 0.1f, 0.1f);
-        sphere->velocity = glm::vec3(0.f);
-
-        sphereMeshes.push_back(sphere);
-    }
-
 #pragma region OtherMeshes
-    plane_mesh = Mesh(Plane, 4, colors.green, nullptr);
-    plane_mesh.globalPosition.y = -0.5f;
-    wallMeshes.push_back(&plane_mesh);
 
 
     CameraMesh = Mesh(Cube, 0.5f, colors.white, nullptr);
     CameraMesh.globalPosition = MainCamera.cameraPos;
 
-    float wallScale = 4.f;
-    float heightScale = 0.4f;
-    wall1_mesh = Mesh(Cube, 1.f, colors.orange, nullptr);
-    wall1_mesh.globalPosition = glm::vec3(0.0f, 0.0f, -4.0f);
-    wall1_mesh.globalScale = glm::vec3(wallScale, wallScale*heightScale, 0.1f);
-    wallMeshes.push_back(&wall1_mesh);
-
-    wall2_mesh = Mesh(Cube, 1.f, colors.cyan, nullptr);
-    wall2_mesh.globalPosition = glm::vec3(0.0f, 0.0f, 4.0f);
-    wall2_mesh.globalScale = glm::vec3(wallScale, wallScale*heightScale, 0.1f);
-    wallMeshes.push_back(&wall2_mesh);
-
-    wall3_mesh = Mesh(Cube, 1.f, colors.yellow, nullptr);
-    wall3_mesh.globalPosition = glm::vec3(-4.0f, 0.0f, 0.0f);
-    wall3_mesh.globalScale = glm::vec3(0.1f, wallScale*heightScale, wallScale);
-    wallMeshes.push_back(&wall3_mesh);
-
-    wall4_mesh = Mesh(Cube, 1.f, colors.blue, nullptr);
-    wall4_mesh.globalPosition = glm::vec3(4.0f, 0.0f, 0.0f);
-    wall4_mesh.globalScale = glm::vec3(0.1f, wallScale*heightScale, wallScale);
-    wallMeshes.push_back(&wall4_mesh);
 #pragma endregion
 }
 
@@ -549,8 +500,6 @@ void processInput(GLFWwindow* window)
 
     if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
     {
-        auto transformComponent = componentManager.GetComponent<TransformComponent>(playerEntity->GetId());
-        transformComponent->position = PlayerMesh.globalPosition;
         Attack();
     }
 
@@ -667,34 +616,36 @@ void CameraView(std::vector<unsigned> shaderPrograms, glm::mat4 trans, glm::mat4
 
 void CollisionChecking()
 {
-    int W = 0;
-    for (Mesh* wall : wallMeshes)
+
+    int p = 0;
+    for (int i = 0; i < enemyEntities.size(); ++i)
     {
-        for (int i = 0; i < sphereMeshes.size(); ++i)
+        auto sphereMeshComponent1 = componentManager.GetComponent<Mesh>(enemyEntities[i]->GetId());
+
+        for (int j = p + 1; j < enemyEntities.size(); ++j)
         {
-            collision.SphereToAABBCollision(sphereMeshes[i], wall);
+            auto sphereMeshComponent2 = componentManager.GetComponent<Mesh>(enemyEntities[j]->GetId());
+            collision.SphereCollision(sphereMeshComponent1.get(), sphereMeshComponent2.get());
         }
-        W++;
+        p++;
     }
+
+
+    int W = 0;
+
+
 
     // Marking spheres for deletion
     std::set<int> spheresToDelete;
-
-    int p = 0;
-    for (int i = 0; i < sphereMeshes.size(); ++i)
+    auto playerMeshComponent = componentManager.GetComponent<Mesh>(playerEntity->GetId());
+    for (auto it = enemyEntities.begin(); it != enemyEntities.end();)
     {
-        Mesh* sphere = sphereMeshes[i];
-
-        for (int j = p + 1; j < sphereMeshes.size(); ++j)
-        {
-            collision.SphereCollision(sphere, sphereMeshes[j]);
-        }
-
-        if (collision.SphereToAABBCollision(sphere, &PlayerMesh) && !sphere->markedForDeletion)
+        auto sphereMeshComponent = componentManager.GetComponent<Mesh>((*it)->GetId());
+        if (collision.SphereToAABBCollision(sphereMeshComponent.get(), &PlayerMesh) && !sphereMeshComponent->markedForDeletion)
         {
             std::cout << "Collision with player" << std::endl;
             // Knockback
-            glm::vec3 knockbackDirection = glm::normalize(PlayerMesh.globalPosition - sphere->globalPosition);
+            glm::vec3 knockbackDirection = glm::normalize(PlayerMesh.globalPosition - sphereMeshComponent->globalPosition);
             float smoothingFactor = 0.1f; // Adjust this value to control the smoothing
             if (CameraMode == 2) {
                 MainCamera.cameraPos = math.lerp(MainCamera.cameraPos, MainCamera.cameraPos + knockbackDirection * 0.1f, smoothingFactor);
@@ -702,32 +653,37 @@ void CollisionChecking()
                 PlayerMesh.globalPosition = math.lerp(PlayerMesh.globalPosition, PlayerMesh.globalPosition + knockbackDirection * 0.1f, smoothingFactor);
             }
 
-
             // Mark sphere for deletion
-            sphere->markedForDeletion = true;
-            spheresToDelete.insert(i);
+            sphereMeshComponent->markedForDeletion = true;
+            spheresToDelete.insert((*it)->GetId());
 
+            // Remove sphere entity from the enemyEntities vector
+            it = enemyEntities.erase(it);
+
+            // Update lives and player color
+            lives--;
+
+            if (lives <= 0) {
+                std::cout << "Game Over" << std::endl;
+                playerMeshComponent->SetColor(colors.red);
+            } else if (lives <= 3) {
+                playerMeshComponent->SetColor(colors.orange);
+            } else {
+                playerMeshComponent->SetColor(colors.magenta);
+            }
         }
-        p++;
+        else
+        {
+            ++it;
+        }
     }
 
     // Delete the marked spheres
-    for (auto it = spheresToDelete.rbegin(); it != spheresToDelete.rend(); ++it)
+    for (int entityId : spheresToDelete)
     {
-        delete sphereMeshes[*it];
-        sphereMeshes.erase(sphereMeshes.begin() + *it);
-
-        lives --;
-        if (lives <= 0) {
-            std::cout << "Game Over" << std::endl;
-            PlayerMesh.SetColor(colors.red);
-        }
-        if (lives <= 3 && lives > 0) {
-            PlayerMesh.SetColor(colors.orange);
-        }
-        if (lives > 3) {
-            PlayerMesh.SetColor(colors.magenta);
-        }
+        componentManager.RemoveComponent<TransformComponent>(entityId);
+        componentManager.RemoveComponent<Mesh>(entityId);
+        entityManager.DestroyEntity(Entity(componentManager, entityId));
     }
 
     for (auto it = healthPotions.begin(); it != healthPotions.end();)
@@ -741,8 +697,7 @@ void CollisionChecking()
             //entityManager.DestroyEntity((*it)->GetId());
             it = healthPotions.erase(it);
             lives = 6;
-            PlayerMesh.SetColor(colors.magenta);
-            //TODO REMOVE HEALTH POTIONS FROM ENTITIES LIST PLEASE
+            playerMeshComponent->SetColor(colors.magenta);
         }
         else
         {
@@ -762,26 +717,41 @@ glm::vec3 RandomColor()
 
 void Attack()
 {
-    float attackRadius = 0.7f;
-    float knockbackDistance = 0.5f;
+    float attackRadius = 1.7f;
+    float knockbackDistance = 0.8f;
 
-    for (Mesh* sphere : sphereMeshes)
+    for (auto& entity : enemyEntities)
     {
-        float distance = glm::distance(PlayerMesh.globalPosition, sphere->globalPosition);
-        if (distance <= attackRadius)
-        {
-            // Apply knockback
-            glm::vec3 knockbackDirection = glm::normalize(sphere->globalPosition - PlayerMesh.globalPosition);
-            sphere->globalPosition += knockbackDirection * knockbackDistance;
+        auto sphereMeshComponent = componentManager.GetComponent<Mesh>(entity->GetId());
+        auto sphereTransformComponent = componentManager.GetComponent<TransformComponent>(entity->GetId());
 
-            // Decrease health
-            sphere->health -= 1;
-            if (sphere->health <= 0)
+        if (sphereMeshComponent && sphereTransformComponent)
+        {
+            float distance = glm::distance(PlayerMesh.globalPosition, sphereTransformComponent->position);
+            if (distance <= attackRadius)
             {
-                // Mark sphere for deletion
-                sphere->markedForDeletion = true;
+                // Apply knockback
+                glm::vec3 knockbackDirection = glm::normalize(sphereTransformComponent->position - PlayerMesh.globalPosition);
+                sphereTransformComponent->position += knockbackDirection * knockbackDistance;
+
+                // Decrease health
+                sphereMeshComponent->health -= 1;
+                if (sphereMeshComponent->health <= 0)
+                {
+                    // Mark sphere for deletion
+                    sphereMeshComponent->markedForDeletion = true;
+                }
             }
         }
     }
+
+    // Remove marked spheres
+    enemyEntities.erase(
+        std::remove_if(enemyEntities.begin(), enemyEntities.end(), [](const std::shared_ptr<Entity>& entity) {
+            auto sphereMeshComponent = componentManager.GetComponent<Mesh>(entity->GetId());
+            return sphereMeshComponent && sphereMeshComponent->markedForDeletion;
+        }),
+        enemyEntities.end()
+    );
 }
 

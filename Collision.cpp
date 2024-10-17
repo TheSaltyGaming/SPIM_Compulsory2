@@ -21,7 +21,7 @@ bool Collision::AABBCollision(Mesh* mesh1, Mesh* other)
     
     bool collision = overlapX && overlapY && overlapZ;
 
-    std::cout << overlapX << " " << overlapY << " " << overlapZ << std::endl;
+    //std::cout << overlapX << " " << overlapY << " " << overlapZ << std::endl;
     
     if (collision)
     {
