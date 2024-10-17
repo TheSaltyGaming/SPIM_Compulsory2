@@ -83,6 +83,7 @@ struct colorStruct
 };
 
 colorStruct colors;
+
 ///Delta time variables
 ///--------------------
 float deltaTime = 0.0f;	// Time between current frame and last frame
@@ -126,6 +127,7 @@ void EntitySetup()
     // Set up health potions
     glm::vec3 scale = glm::vec3(0.05f);
     glm::vec3 initialPosition = glm::vec3(0.0f);
+
 
     for (int i = 0; i < 3; ++i) {
         // Create new entity for the health potion
@@ -621,6 +623,8 @@ void CollisionChecking()
     for (int i = 0; i < enemyEntities.size(); ++i)
     {
         auto sphereMeshComponent1 = componentManager.GetComponent<Mesh>(enemyEntities[i]->GetId());
+
+        if (sphereMeshComponent1->markedForDeletion) break;
 
         for (int j = p + 1; j < enemyEntities.size(); ++j)
         {

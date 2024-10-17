@@ -1,7 +1,4 @@
 ﻿#include "EntityManager.h"
-
-#include <cassert>
-
 #include "Entity.h"
 
 

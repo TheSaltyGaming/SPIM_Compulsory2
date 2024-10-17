@@ -20,7 +20,7 @@ public:
         for (unsigned int i = 0; i < MAX_ENTITIES; ++i) {
             if (componentManager.HasComponent<T>(i)) {
                 // Create an entity object and add it to the list if it has the component
-                entitiesWithComponent.push_back(Entity(componentManager, i));
+                entitiesWithComponent.emplace_back(componentManager, i);
             }
         }
 
