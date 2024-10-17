@@ -44,7 +44,7 @@ std::unique_ptr<Entity> playerEntity;
 
 std::vector<std::shared_ptr<Entity>> healthPotions;
 
-std::unique_ptr<Entity> wallEntity;
+std::vector<std::shared_ptr<Entity>> enemyEntities;
 
 std::vector<Mesh*> wallMeshes;
 std::vector<Mesh*> sphereMeshes;
@@ -54,9 +54,6 @@ Mesh PlayerMesh;
 Math math;
 Collision collision;
 
-Mesh sphere_mesh;
-
-Mesh sphere2Mesh;
 
 Mesh plane_mesh;
 
@@ -158,6 +155,32 @@ void EntitySetup()
         healthPotions.push_back(healthPotion);
     }
 
+
+    int SphereCount = 10;
+
+    for (int i = 0; i < SphereCount; ++i) {
+        // Create new entity for the sphere
+        auto sphereEntity = std::make_shared<Entity>(entityManager.CreateEntity());
+
+        // Add Transform Component
+        auto sphereTransformComponent = std::make_shared<TransformComponent>();
+        sphereTransformComponent->position = glm::vec3(
+            math.RandomVec3(-3.7, 3.7).x,
+            0.5, // y
+            math.RandomVec3(-3.7, 3.7).z
+        );
+        sphereTransformComponent->scale = glm::vec3(0.1f, 0.1f, 0.1f);
+        sphereTransformComponent->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+
+        // Add Mesh Component
+        auto sphereMeshComponent = std::make_shared<Mesh>(Sphere, 1.f, 4, RandomColor(), sphereTransformComponent.get());
+
+        componentManager.AddComponent<TransformComponent>(sphereEntity->GetId(), sphereTransformComponent);
+        componentManager.AddComponent<Mesh>(sphereEntity->GetId(), sphereMeshComponent);
+
+        // Add sphere entity to the enemyEntities vector
+        enemyEntities.push_back(sphereEntity);
+    }
 }
 
 
@@ -342,7 +365,7 @@ void SetupMeshes()
     PlayerMesh.globalScale = glm::vec3(0.2f, 0.2f, 0.2f);
 
 
-    int SphereCount = 10;
+    int SphereCount = 0;
 
     for (int i = 0; i < SphereCount; ++i) {
         Mesh* sphere = new Mesh(Sphere, 1.f, 4, RandomColor(), nullptr);
