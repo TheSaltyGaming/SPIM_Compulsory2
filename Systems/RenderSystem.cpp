@@ -1,31 +1,32 @@
 ﻿#include "RenderSystem.h"
 
+#include <iostream>
+
 #include "../ECS/ComponentManager.h"
 #include "../Mesh/Mesh.h"
 #include "glad/glad.h"
 #include "glm/fwd.hpp"
 
-void RenderSystem::Update(std::vector<Entity>& entities, float deltaTime)
+
+void RenderSystem::Update(float deltaTime)
 {
-	for (auto& entity : entities)
-	{
-		if (mComponentManager.HasComponent<Mesh>(entity.GetId()) && mComponentManager.HasComponent<TransformComponent>(entity.GetId()))
-		{
-			//TODO: FIX THIS
-			// auto& meshComponent = mComponentManager.GetComponent<MeshComponent>(entity.GetId());
-			//
-			// auto& transformComponent = mComponentManager.GetComponent<TransformComponent>(entity.GetId());
-		}
+	if (!mShaderProgram) {
+		std::cout << "Shader program not set!" << std::endl;
+		return;
 	}
+	std::vector<Entity> entitiesWithMesh = mEntityManager.GetAllEntitiesWithComponent<Mesh>();
+	RenderEntity(entitiesWithMesh);
+
 }
 
 void RenderSystem::RenderEntity(std::vector<Entity>& entities)
 {
-	for (auto& entity : entities) {
-		if (mComponentManager.HasComponent<Mesh>(entity.GetId())) {
-			auto mesh = mComponentManager.GetComponent<Mesh>(entity.GetId());
-			// Render using mesh methods
-			mesh->Draw(mShaderProgram);
+	for (const Entity& entity : entities) {
+		// Retrieve the MeshComponent
+		std::shared_ptr<Mesh> meshComponent = mComponentManager.GetComponent<Mesh>(entity.GetId());
+		// If there's a valid MeshComponent, we draw it
+		if (meshComponent) {
+			meshComponent->Draw(mShaderProgram);
 		}
 	}
 }

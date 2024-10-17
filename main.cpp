@@ -14,6 +14,7 @@
 #include "Collision.h"
 #include "EntityManager.h"
 #include "Math.h"
+#include "RenderSystem.h"
 #include "Mesh/Mesh.h"
 #include "Mesh/Surface.h"
 #include "glm/mat4x3.hpp"
@@ -34,6 +35,8 @@ glm::vec3 RandomColor();
 ComponentManager componentManager;
 EntityManager entityManager = EntityManager(componentManager);
 
+RenderSystem renderSystem = RenderSystem(componentManager, entityManager);
+
 
 void EntitySetup();
 
@@ -41,6 +44,7 @@ std::unique_ptr<Entity> playerEntity;
 
 std::vector<std::shared_ptr<Entity>> healthPotions;
 
+std::unique_ptr<Entity> wallEntity;
 
 std::vector<Mesh*> wallMeshes;
 std::vector<Mesh*> sphereMeshes;
@@ -184,18 +188,6 @@ void DrawObjects(unsigned VAO, Shader ShaderProgram)
     //CameraMesh.Draw(ShaderProgram.ID);
 
 
-    std::vector<Entity> entitiesWithMesh = entityManager.GetAllEntitiesWithComponent<Mesh>();
-
-    for (const Entity& entity : entitiesWithMesh) {
-        // Retrieve the MeshComponent
-        std::shared_ptr<Mesh> meshComponent = componentManager.GetComponent<Mesh>(entity.GetId());
-
-        // If there's a valid MeshComponent, we draw it
-        if (meshComponent) {
-            meshComponent->Draw(ShaderProgram.ID);
-        }
-    }
-
 
 
 }
@@ -326,6 +318,8 @@ void render(GLFWwindow* window, Shader ourShader, unsigned VAO)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         DrawObjects(VAO, ourShader);
+
+        renderSystem.Update(deltaTime);
 
         CollisionChecking();
 
@@ -480,6 +474,7 @@ int main()
 
 
     //RENDER FUNCTION HERE!!!!!!!
+    renderSystem.mShaderProgram = ourShader.ID;
     render(window, ourShader, VAO);
 
     // optional: de-allocate all resources once they've outlived their purpose:

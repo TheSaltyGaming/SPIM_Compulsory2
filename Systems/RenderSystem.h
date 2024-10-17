@@ -5,17 +5,22 @@
 #include <glm/matrix.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "EntityManager.h"
+
 class RenderSystem : public System
 {
 public:
 
-    RenderSystem(ComponentManager& componentManager, unsigned int ShaderProgram) : mComponentManager(componentManager), mShaderProgram(ShaderProgram){};
 
-    void Update(std::vector<Entity>& entities, float deltaTime) override;
+    RenderSystem(ComponentManager& componentManager, EntityManager& EntityManager) : mComponentManager(componentManager), mEntityManager(EntityManager){};
+
+    void Update(float deltaTime) override;
 
     void RenderEntity(std::vector<Entity>& entities);
 
+    unsigned int mShaderProgram;
+
 private:
     ComponentManager& mComponentManager;
-    unsigned int mShaderProgram;
+    EntityManager& mEntityManager;
 };

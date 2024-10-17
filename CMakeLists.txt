@@ -44,8 +44,6 @@ add_executable(SPIM_Compulsory2 main.cpp
         Mesh/Mesh.h
         Mesh/Surface.cpp
         Mesh/Surface.h
-        Systems/MovementSystem.cpp
-        Systems/MovementSystem.h
         Systems/RenderSystem.cpp
         Systems/RenderSystem.h
         Systems/System.cpp
